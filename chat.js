@@ -163,6 +163,38 @@
             line-height: 1.5;
         }
 
+        .n8n-chat-widget .message-content {
+            width: 100%;
+        }
+
+        .n8n-chat-widget .message-content br {
+            display: block;
+            margin: 5px 0;
+            content: "";
+        }
+
+        .n8n-chat-widget .list-item {
+            margin: 5px 0;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .n8n-chat-widget .list-item.numbered {
+            padding-left: 5px;
+        }
+
+        .n8n-chat-widget .list-item.bulleted {
+            padding-left: 5px;
+        }
+
+        .n8n-chat-widget .list-number, 
+        .n8n-chat-widget .list-bullet {
+            margin-right: 5px;
+            font-weight: 500;
+            min-width: 20px;
+            display: inline-block;
+        }
+
         .n8n-chat-widget .chat-message.user {
             background: linear-gradient(135deg, var(--chat--color-primary) 0%, var(--chat--color-secondary) 100%);
             color: white;
@@ -177,6 +209,31 @@
             color: var(--chat--color-font);
             align-self: flex-start;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            position: relative;
+            margin-top: 20px;
+        }
+
+        .n8n-chat-widget .agent-avatar {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--chat--color-background);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background-color: var(--chat--color-background);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .n8n-chat-widget .agent-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .n8n-chat-widget .chat-input {
@@ -273,6 +330,91 @@
         .n8n-chat-widget .chat-footer a:hover {
             opacity: 1;
         }
+
+        /* Typing indicator styles */
+        .n8n-chat-widget .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: 12px;
+            max-width: 80px;
+            align-self: flex-start;
+            background: var(--chat--color-background);
+            border: 1px solid rgba(133, 79, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .n8n-chat-widget .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            float: left;
+            margin: 0 1px;
+            background-color: var(--chat--color-primary);
+            display: block;
+            border-radius: 50%;
+            opacity: 0.4;
+        }
+
+        .n8n-chat-widget .typing-indicator span:nth-of-type(1) {
+            animation: typing 1s infinite;
+        }
+
+        .n8n-chat-widget .typing-indicator span:nth-of-type(2) {
+            animation: typing 1s infinite 0.2s;
+        }
+
+        .n8n-chat-widget .typing-indicator span:nth-of-type(3) {
+            animation: typing 1s infinite 0.4s;
+        }
+
+        @keyframes typing {
+            0% {
+                transform: translateY(0px);
+                opacity: 0.4;
+            }
+            50% {
+                transform: translateY(-5px);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(0px);
+                opacity: 0.4;
+            }
+        }
+
+        .n8n-chat-widget .message-content strong {
+            font-weight: 600;
+        }
+
+        .n8n-chat-widget .message-content em {
+            font-style: italic;
+        }
+
+        .n8n-chat-widget .message-content code {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            background-color: rgba(133, 79, 255, 0.1);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: var(--chat--color-primary);
+        }
+
+        .n8n-chat-widget .message-content pre {
+            margin: 8px 0;
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .n8n-chat-widget .message-content pre code {
+            display: block;
+            background-color: rgba(133, 79, 255, 0.05);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(133, 79, 255, 0.2);
+            white-space: pre-wrap;
+            width: 100%;
+        }
     `;
 
     // Load Geist font
@@ -297,6 +439,7 @@
             name: '',
             welcomeText: '',
             responseTimeText: '',
+            agentAvatar: '',
             poweredBy: {
                 text: 'Powered by NetNerd Ventures',
                 link: 'https://www.netnerdventures.com'
@@ -401,6 +544,34 @@
         return crypto.randomUUID();
     }
 
+    // Function to format message text with proper styling
+    function formatMessageText(text) {
+        if (!text) return '';
+        
+        // Replace line breaks with <br> tags
+        let formattedText = text.replace(/\n/g, '<br>');
+        
+        // Format numbered lists (e.g., "1. Item" or "1) Item")
+        formattedText = formattedText.replace(/(\d+[\.\)])\s+(.*?)(?=<br>|$)/g, '<div class="list-item numbered"><span class="list-number">$1</span> $2</div>');
+        
+        // Format bullet points/unnumbered lists (e.g., "• Item" or "- Item" or "* Item")
+        formattedText = formattedText.replace(/([•\-\*])\s+(.*?)(?=<br>|$)/g, '<div class="list-item bulleted"><span class="list-bullet">•</span> $2</div>');
+        
+        // Format bold text (e.g., **bold** or __bold__)
+        formattedText = formattedText.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong>');
+        
+        // Format italic text (e.g., *italic* or _italic_)
+        formattedText = formattedText.replace(/(\*|_)(.*?)\1/g, '<em>$2</em>');
+        
+        // Format inline code (e.g., `code`)
+        formattedText = formattedText.replace(/`([^`]+)`/g, '<code>$1</code>');
+        
+        // Format code blocks (e.g., ```code block```)
+        formattedText = formattedText.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+        
+        return formattedText;
+    }
+
     async function startNewConversation() {
         currentSessionId = generateUUID();
         const data = [{
@@ -413,6 +584,16 @@
         }];
 
         try {
+            if (config.branding.name === '') {
+                chatContainer.querySelector('.brand-name').style.display = 'none';
+            }
+            chatContainer.querySelector('.brand-header').style.display = 'none';
+            chatContainer.querySelector('.new-conversation').style.display = 'none';
+            chatInterface.classList.add('active');
+            
+            // Show typing indicator
+            showTypingIndicator();
+
             const response = await fetch(config.webhook.url, {
                 method: 'POST',
                 headers: {
@@ -422,19 +603,36 @@
             });
 
             const responseData = await response.json();
-            if (config.branding.name === '') {
-                chatContainer.querySelector('.brand-name').style.display = 'none';
-            }
-            chatContainer.querySelector('.brand-header').style.display = 'none';
-            chatContainer.querySelector('.new-conversation').style.display = 'none';
-            chatInterface.classList.add('active');
+            
+            // Hide typing indicator
+            hideTypingIndicator();
 
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.textContent = Array.isArray(responseData) ? responseData[0].output : responseData.output;
+            
+            // Add agent avatar if provided in config
+            if (config.branding.agentAvatar) {
+                const avatarDiv = document.createElement('div');
+                avatarDiv.className = 'agent-avatar';
+                const avatarImg = document.createElement('img');
+                avatarImg.src = config.branding.agentAvatar;
+                avatarImg.alt = 'Agent';
+                avatarDiv.appendChild(avatarImg);
+                botMessageDiv.appendChild(avatarDiv);
+            }
+            
+            // Create a separate element for the message text with formatting
+            const messageText = document.createElement('div');
+            messageText.className = 'message-content';
+            const responseText = Array.isArray(responseData) ? responseData[0].output : responseData.output;
+            messageText.innerHTML = formatMessageText(responseText);
+            botMessageDiv.appendChild(messageText);
+            
             messagesContainer.appendChild(botMessageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         } catch (error) {
+            // Hide typing indicator on error
+            hideTypingIndicator();
             console.error('Error:', error);
         }
     }
@@ -454,6 +652,10 @@
         userMessageDiv.className = 'chat-message user';
         userMessageDiv.textContent = message;
         messagesContainer.appendChild(userMessageDiv);
+        
+        // Show typing indicator
+        showTypingIndicator();
+        
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
         try {
@@ -467,13 +669,54 @@
             
             const data = await response.json();
             
+            // Hide typing indicator
+            hideTypingIndicator();
+            
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.textContent = Array.isArray(data) ? data[0].output : data.output;
+            
+            // Add agent avatar if provided in config
+            if (config.branding.agentAvatar) {
+                const avatarDiv = document.createElement('div');
+                avatarDiv.className = 'agent-avatar';
+                const avatarImg = document.createElement('img');
+                avatarImg.src = config.branding.agentAvatar;
+                avatarImg.alt = 'Agent';
+                avatarDiv.appendChild(avatarImg);
+                botMessageDiv.appendChild(avatarDiv);
+            }
+            
+            // Create a separate element for the message text with formatting
+            const messageText = document.createElement('div');
+            messageText.className = 'message-content';
+            const responseText = Array.isArray(data) ? data[0].output : data.output;
+            messageText.innerHTML = formatMessageText(responseText);
+            botMessageDiv.appendChild(messageText);
+            
             messagesContainer.appendChild(botMessageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         } catch (error) {
+            // Hide typing indicator on error
+            hideTypingIndicator();
             console.error('Error:', error);
+        }
+    }
+
+    // Function to show typing indicator
+    function showTypingIndicator() {
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'typing-indicator';
+        typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+        typingIndicator.id = 'typing-indicator';
+        messagesContainer.appendChild(typingIndicator);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Function to hide typing indicator
+    function hideTypingIndicator() {
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
         }
     }
 
