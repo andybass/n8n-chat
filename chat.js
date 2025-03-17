@@ -415,6 +415,81 @@
             white-space: pre-wrap;
             width: 100%;
         }
+
+        .n8n-chat-widget .email-collection {
+            display: none;
+            padding: 16px;
+            background: var(--chat--color-background);
+            border-top: 1px solid rgba(133, 79, 255, 0.1);
+            gap: 12px;
+        }
+
+        .n8n-chat-widget .email-collection.visible {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .n8n-chat-widget .email-collection p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--chat--color-font);
+            opacity: 0.8;
+        }
+
+        .n8n-chat-widget .email-collection .email-input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .n8n-chat-widget .email-collection input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid rgba(133, 79, 255, 0.2);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--chat--color-font);
+        }
+
+        .n8n-chat-widget .email-collection input:focus {
+            outline: none;
+            border-color: var(--chat--color-primary);
+            box-shadow: 0 0 0 2px rgba(133, 79, 255, 0.1);
+        }
+
+        .n8n-chat-widget .email-collection button {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, var(--chat--color-primary) 0%, var(--chat--color-secondary) 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-family: inherit;
+            font-weight: 500;
+        }
+
+        .n8n-chat-widget .email-collection button:hover {
+            transform: scale(1.02);
+        }
+
+        .n8n-chat-widget .email-collection button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .n8n-chat-widget .email-collection .error-message {
+            color: #dc2626;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .n8n-chat-widget .email-collection .error-message.visible {
+            display: block;
+        }
     `;
 
     // Load Geist font
@@ -433,6 +508,10 @@
         webhook: {
             url: '',
             route: ''
+        },
+        transcript: {
+            webhookUrl: '', // New configuration for transcript webhook
+            includeMetadata: true // Whether to include metadata in the transcript
         },
         branding: {
             logo: '',
@@ -460,6 +539,7 @@
     const config = window.ChatWidgetConfig ? 
         {
             webhook: { ...defaultConfig.webhook, ...window.ChatWidgetConfig.webhook },
+            transcript: { ...defaultConfig.transcript, ...window.ChatWidgetConfig.transcript },
             branding: { ...defaultConfig.branding, ...window.ChatWidgetConfig.branding },
             style: { ...defaultConfig.style, ...window.ChatWidgetConfig.style }
         } : defaultConfig;
@@ -511,6 +591,14 @@
                 <button class="close-button">×</button>
             </div>
             <div class="chat-messages"></div>
+            <div class="email-collection">
+                <p>Would you like to receive a follow-up response via email?</p>
+                <div class="email-input-group">
+                    <input type="email" placeholder="Enter your email address" />
+                    <button type="button">Submit</button>
+                </div>
+                <div class="error-message">Please enter a valid email address</div>
+            </div>
             <div class="chat-input">
                 <textarea placeholder="Type your message here..." rows="1"></textarea>
                 <button type="submit">Send</button>
@@ -539,6 +627,12 @@
     const messagesContainer = chatContainer.querySelector('.chat-messages');
     const textarea = chatContainer.querySelector('textarea');
     const sendButton = chatContainer.querySelector('button[type="submit"]');
+
+    const emailCollection = chatContainer.querySelector('.email-collection');
+    const emailInput = emailCollection.querySelector('input');
+    const emailSubmitButton = emailCollection.querySelector('button');
+    const emailErrorMessage = emailCollection.querySelector('.error-message');
+    let userEmail = '';
 
     function generateUUID() {
         return crypto.randomUUID();
@@ -695,6 +789,13 @@
             
             messagesContainer.appendChild(botMessageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // Check if the response indicates a need for follow-up
+            if (responseText.toLowerCase().includes("i'll get back to you") || 
+                responseText.toLowerCase().includes("i'll follow up") ||
+                responseText.toLowerCase().includes("i'll email you")) {
+                showEmailCollection();
+            }
         } catch (error) {
             // Hide typing indicator on error
             hideTypingIndicator();
@@ -745,11 +846,112 @@
         chatContainer.classList.toggle('open');
     });
 
-    // Add close button handlers
+    // Function to capture chat transcript
+    function captureTranscript() {
+        const messages = [];
+        const messageElements = messagesContainer.querySelectorAll('.chat-message');
+        
+        messageElements.forEach(element => {
+            const isUser = element.classList.contains('user');
+            const messageContent = element.querySelector('.message-content') || element;
+            const messageText = messageContent.textContent.trim();
+            
+            messages.push({
+                role: isUser ? 'user' : 'assistant',
+                content: messageText,
+                timestamp: new Date().toISOString()
+            });
+        });
+
+        return {
+            sessionId: currentSessionId,
+            messages: messages,
+            metadata: {
+                startTime: messages[0]?.timestamp,
+                endTime: new Date().toISOString(),
+                messageCount: messages.length,
+                userAgent: navigator.userAgent,
+                screenResolution: `${window.screen.width}x${window.screen.height}`,
+                language: navigator.language,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                userEmail: userEmail || null
+            }
+        };
+    }
+
+    // Function to send transcript to webhook
+    async function sendTranscript(transcript) {
+        if (!config.transcript.webhookUrl) return;
+
+        try {
+            await fetch(config.transcript.webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(transcript)
+            });
+        } catch (error) {
+            console.error('Error sending transcript:', error);
+        }
+    }
+
+    // Update close button handlers to send transcript
     const closeButtons = chatContainer.querySelectorAll('.close-button');
     closeButtons.forEach(button => {
-        button.addEventListener('click', () => {
+        button.addEventListener('click', async () => {
+            const transcript = captureTranscript();
+            await sendTranscript(transcript);
             chatContainer.classList.remove('open');
         });
     });
+
+    // Also capture transcript when the page is unloaded
+    window.addEventListener('beforeunload', async () => {
+        if (chatContainer.classList.contains('open')) {
+            const transcript = captureTranscript();
+            // Use sendBeacon for more reliable sending during page unload
+            if (config.transcript.webhookUrl) {
+                navigator.sendBeacon(
+                    config.transcript.webhookUrl,
+                    JSON.stringify(transcript)
+                );
+            }
+        }
+    });
+
+    // Function to validate email
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    // Function to handle email submission
+    function handleEmailSubmit() {
+        const email = emailInput.value.trim();
+        
+        if (!isValidEmail(email)) {
+            emailErrorMessage.classList.add('visible');
+            return;
+        }
+
+        emailErrorMessage.classList.remove('visible');
+        userEmail = email;
+        emailCollection.classList.remove('visible');
+        emailInput.value = '';
+        emailSubmitButton.disabled = true;
+    }
+
+    // Add email submission handler
+    emailSubmitButton.addEventListener('click', handleEmailSubmit);
+    emailInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            handleEmailSubmit();
+        }
+    });
+
+    // Function to show email collection
+    function showEmailCollection() {
+        emailCollection.classList.add('visible');
+        emailInput.focus();
+    }
 })();
