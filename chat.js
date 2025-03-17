@@ -6,7 +6,8 @@
             --chat--color-primary: var(--n8n-chat-primary-color, #854fff);
             --chat--color-secondary: var(--n8n-chat-secondary-color, #6b3fd4);
             --chat--color-background: var(--n8n-chat-background-color, #ffffff);
-            --chat--header-color-background: var(--n8n-chat-header-background-color, #ffffff);
+            --chat--header-color: var(--n8n-chat-header-color, #ffffff);
+            --chat--header-background-color: var(--n8n-chat-header-background-color, #ffffff);
             --chat--color-font: var(--n8n-chat-font-color, #333333);
             font-family: 'Geist Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
@@ -44,7 +45,8 @@
             gap: 12px;
             border-bottom: 1px solid rgba(133, 79, 255, 0.1);
             position: relative;
-            background: var(--chat--header-color-background);
+            background: var(--chat--header-background-color);
+            color: var(--chat--header-color);
         }
 
         .n8n-chat-widget .close-button {
@@ -70,7 +72,6 @@
         }
 
         .n8n-chat-widget .brand-header img {
-            width: 32px;
             height: 32px;
         }
 
@@ -307,7 +308,8 @@
             secondaryColor: '',
             position: 'right',
             backgroundColor: '#ffffff',
-            headerBackgroundColor: '#ffffff',
+            headerBackgroundColor: '#333333',
+            headerFontColor: '#ffffff',
             fontColor: '#333333'
         }
     };
@@ -336,6 +338,7 @@
     widgetContainer.style.setProperty('--n8n-chat-background-color', config.style.backgroundColor);
     widgetContainer.style.setProperty('--n8n-chat-font-color', config.style.fontColor);
     widgetContainer.style.setProperty('--n8n-chat-header-background-color', config.style.headerBackgroundColor);
+    widgetContainer.style.setProperty('--n8n-chat-header-color', config.style.headerFontColor);
 
     const chatContainer = document.createElement('div');
     chatContainer.className = `chat-container${config.style.position === 'left' ? ' position-left' : ''}`;
