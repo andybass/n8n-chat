@@ -6,6 +6,7 @@
             --chat--color-primary: var(--n8n-chat-primary-color, #854fff);
             --chat--color-secondary: var(--n8n-chat-secondary-color, #6b3fd4);
             --chat--color-background: var(--n8n-chat-background-color, #ffffff);
+            --chat--header-color-background: var(--n8n-chat-header-background-color, #ffffff);
             --chat--color-font: var(--n8n-chat-font-color, #333333);
             font-family: 'Geist Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
@@ -43,6 +44,7 @@
             gap: 12px;
             border-bottom: 1px solid rgba(133, 79, 255, 0.1);
             position: relative;
+            background: var(--chat--header-color-background);
         }
 
         .n8n-chat-widget .close-button {
@@ -296,8 +298,8 @@
             welcomeText: '',
             responseTimeText: '',
             poweredBy: {
-                text: 'Powered by n8n',
-                link: 'https://n8n.partnerlinks.io/m8a94i19zhqq?utm_source=nocodecreative.io'
+                text: 'Powered by NetNerd Ventures',
+                link: 'https://www.netnerdventures.com'
             }
         },
         style: {
@@ -305,6 +307,7 @@
             secondaryColor: '',
             position: 'right',
             backgroundColor: '#ffffff',
+            headerBackgroundColor: '#ffffff',
             fontColor: '#333333'
         }
     };
@@ -332,6 +335,7 @@
     widgetContainer.style.setProperty('--n8n-chat-secondary-color', config.style.secondaryColor);
     widgetContainer.style.setProperty('--n8n-chat-background-color', config.style.backgroundColor);
     widgetContainer.style.setProperty('--n8n-chat-font-color', config.style.fontColor);
+    widgetContainer.style.setProperty('--n8n-chat-header-background-color', config.style.headerBackgroundColor);
 
     const chatContainer = document.createElement('div');
     chatContainer.className = `chat-container${config.style.position === 'left' ? ' position-left' : ''}`;
