@@ -6,7 +6,7 @@
             --chat--color-primary: var(--n8n-chat-primary-color, #854fff);
             --chat--color-secondary: var(--n8n-chat-secondary-color, #6b3fd4);
             --chat--color-background: var(--n8n-chat-background-color, #ffffff);
-            --chat--header-color: var(--n8n-chat-header-color, #ffffff);
+            --chat--header-color: var(--n8n-chat-header-color, #333333);
             --chat--header-background-color: var(--n8n-chat-header-background-color, #ffffff);
             --chat--color-font: var(--n8n-chat-font-color, #333333);
             font-family: 'Geist Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -45,8 +45,7 @@
             gap: 12px;
             border-bottom: 1px solid rgba(133, 79, 255, 0.1);
             position: relative;
-            background: var(--chat--header-background-color);
-            color: var(--chat--header-color);
+            background-color: var(--chat--header-background-color);
         }
 
         .n8n-chat-widget .close-button {
@@ -78,7 +77,7 @@
         .n8n-chat-widget .brand-header span {
             font-size: 18px;
             font-weight: 500;
-            color: var(--chat--color-font);
+            color: var(--chat--header-color);
         }
 
         .n8n-chat-widget .new-conversation {
@@ -309,7 +308,7 @@
             position: 'right',
             backgroundColor: '#ffffff',
             headerBackgroundColor: '#333333',
-            headerFontColor: '#ffffff',
+            headerColor: '#ffffff',
             fontColor: '#333333'
         }
     };
@@ -338,7 +337,7 @@
     widgetContainer.style.setProperty('--n8n-chat-background-color', config.style.backgroundColor);
     widgetContainer.style.setProperty('--n8n-chat-font-color', config.style.fontColor);
     widgetContainer.style.setProperty('--n8n-chat-header-background-color', config.style.headerBackgroundColor);
-    widgetContainer.style.setProperty('--n8n-chat-header-color', config.style.headerFontColor);
+    widgetContainer.style.setProperty('--n8n-chat-header-color', config.style.headerColor);
 
     const chatContainer = document.createElement('div');
     chatContainer.className = `chat-container${config.style.position === 'left' ? ' position-left' : ''}`;
@@ -346,7 +345,7 @@
     const newConversationHTML = `
         <div class="brand-header">
             <img src="${config.branding.logo}" alt="${config.branding.name}">
-            <span>${config.branding.name}</span>
+            <span class="brand-name">${config.branding.name}</span>
             <button class="close-button">×</button>
         </div>
         <div class="new-conversation">
@@ -365,7 +364,7 @@
         <div class="chat-interface">
             <div class="brand-header">
                 <img src="${config.branding.logo}" alt="${config.branding.name}">
-                <span>${config.branding.name}</span>
+                <span class="brand-name">${config.branding.name}</span>
                 <button class="close-button">×</button>
             </div>
             <div class="chat-messages"></div>
@@ -423,6 +422,9 @@
             });
 
             const responseData = await response.json();
+            if (config.branding.name === '') {
+                chatContainer.querySelector('.brand-name').style.display = 'none';
+            }
             chatContainer.querySelector('.brand-header').style.display = 'none';
             chatContainer.querySelector('.new-conversation').style.display = 'none';
             chatInterface.classList.add('active');
