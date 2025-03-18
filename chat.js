@@ -175,8 +175,7 @@
 
         .n8n-chat-widget .list-item {
             margin: 5px 0;
-            display: flex;
-            align-items: flex-start;
+            display: block;
         }
 
         .n8n-chat-widget .list-item.numbered {
