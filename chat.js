@@ -652,16 +652,16 @@
         formattedText = formattedText.replace(/([•\-\*])\s+(.*?)(?=<br>|$)/g, '<div class="list-item bulleted"><span class="list-bullet">•</span> $2</div>');
         
         // Format bold text (e.g., **bold** or __bold__)
-        formattedText = formattedText.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong>');
+        formattedText = formattedText.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong><br/>');
         
         // Format italic text (e.g., *italic* or _italic_)
-        formattedText = formattedText.replace(/(\*|_)(.*?)\1/g, '<em>$2</em>');
+        formattedText = formattedText.replace(/(\*|_)(.*?)\1/g, '<em>$2</em><br/>');
         
         // Format inline code (e.g., `code`)
-        formattedText = formattedText.replace(/`([^`]+)`/g, '<code>$1</code>');
+        formattedText = formattedText.replace(/`([^`]+)`/g, '<code>$1</code><br/>');
         
         // Format code blocks (e.g., ```code block```)
-        formattedText = formattedText.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+        formattedText = formattedText.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre><br/>');
         
         return formattedText;
     }
