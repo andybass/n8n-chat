@@ -651,13 +651,16 @@
         // Format bullet points/unnumbered lists (e.g., "• Item" or "- Item" or "* Item")
         formattedText = formattedText.replace(/([•\-\*])\s+(.*?)(?=<br>|$)/g, '<div class="list-item bulleted"><span class="list-bullet">•</span> $2</div><br/>');
         
-        // Add line break between title and description in lists
+        // Format bold text (e.g., **bold** or __bold__)
+        formattedText = formattedText.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong>');
+        
+        // Handle bold titles with colons in lists
+        formattedText = formattedText.replace(/(<div class="list-item[^>]*>.*?<strong>([^<]+)<\/strong>):\s*(.*?)(<\/div>)/g, '$1<br>$3$4');
+        
+        // Add line break between title and description in lists (for non-bold titles)
         formattedText = formattedText.replace(/(<div class="list-item[^>]*>.*?):\s*(.*?)(<\/div>)/g, '$1<br>$2$3');
         
-        // Format bold text (e.g., **bold** or __bold__)
-        formattedText = formattedText.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong><br/>');
-        
-        // Add line break between bold title and description in lists
+        // Add line break between bold title and description in lists (for non-colon bold titles)
         formattedText = formattedText.replace(/(<div class="list-item[^>]*>.*?<strong>([^<]+)<\/strong>)\s+(.*?)(<\/div>)/g, '$1<br>$3$4');
         
         // Format italic text (e.g., *italic* or _italic_)
