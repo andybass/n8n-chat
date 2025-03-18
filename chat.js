@@ -646,10 +646,10 @@
         let formattedText = text.replace(/\n/g, '<br>');
         
         // Format numbered lists (e.g., "1. Item" or "1) Item")
-        formattedText = formattedText.replace(/(\d+[\.\)])\s+(.*?)(?=<br>|$)/g, '<div class="list-item numbered"><span class="list-number">$1</span> $2</div>');
+        formattedText = formattedText.replace(/(\d+[\.\)])\s+(.*?)(?=<br>|$)/g, '<div class="list-item numbered"><span class="list-number">$1</span> $2</div><br/>');
         
         // Format bullet points/unnumbered lists (e.g., "• Item" or "- Item" or "* Item")
-        formattedText = formattedText.replace(/([•\-\*])\s+(.*?)(?=<br>|$)/g, '<div class="list-item bulleted"><span class="list-bullet">•</span> $2</div>');
+        formattedText = formattedText.replace(/([•\-\*])\s+(.*?)(?=<br>|$)/g, '<div class="list-item bulleted"><span class="list-bullet">•</span> $2</div><br/>');
         
         // Format bold text (e.g., **bold** or __bold__)
         formattedText = formattedText.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong><br/>');
