@@ -657,6 +657,9 @@
         // Format bold text (e.g., **bold** or __bold__)
         formattedText = formattedText.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong><br/>');
         
+        // Add line break between bold title and description in lists
+        formattedText = formattedText.replace(/(<div class="list-item[^>]*>.*?<strong>([^<]+)<\/strong>)\s+(.*?)(<\/div>)/g, '$1<br>$3$4');
+        
         // Format italic text (e.g., *italic* or _italic_)
         formattedText = formattedText.replace(/(\*|_)(.*?)\1/g, '<em>$2</em><br/>');
         
