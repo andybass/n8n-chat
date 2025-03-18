@@ -651,6 +651,9 @@
         // Format bullet points/unnumbered lists (e.g., "• Item" or "- Item" or "* Item")
         formattedText = formattedText.replace(/([•\-\*])\s+(.*?)(?=<br>|$)/g, '<div class="list-item bulleted"><span class="list-bullet">•</span> $2</div><br/>');
         
+        // Add line break between title and description in lists
+        formattedText = formattedText.replace(/(<div class="list-item[^>]*>.*?):\s*(.*?)(<\/div>)/g, '$1<br>$2$3');
+        
         // Format bold text (e.g., **bold** or __bold__)
         formattedText = formattedText.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong><br/>');
         
